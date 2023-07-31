@@ -1,11 +1,12 @@
 #!/usr/bin/python3
 """Defines the BaseModel class."""
 import models
-import hashlib
 from uuid import uuid4
 from datetime import datetime
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import Column, DateTime, String
+from sqlalchemy import Column
+from sqlalchemy import DateTime
+from sqlalchemy import String
 
 Base = declarative_base()
 
@@ -45,24 +46,19 @@ class BaseModel:
         models.storage.new(self)
         models.storage.save()
 
-    def to_dict(self, save_fs=None):
+    def to_dict(self):
         """Return a dictionary representation of the BaseModel instance.
 
         Includes the key/value pair __class__ representing
         the class name of the object.
-
-        Args:
-            save_fs (str): Storage type. If "db", hash the 'password' key.
-
-        Returns:
-            dict: A dictionary representation of the BaseModel instance.
         """
         my_dict = self.__dict__.copy()
         my_dict["__class__"] = str(type(self).__name__)
         my_dict["created_at"] = self.created_at.isoformat()
         my_dict["updated_at"] = self.updated_at.isoformat()
-        if save_fs == "db":
-            my_dict["password"] = hashlib.md5(my_dict.get("password", "").encode()).hexdigest()
+        my_dict.pop("_sa_instance_state", None)
+        if save_fs != "db":
+            my_dict.pop("password", None)
         my_dict.pop("_sa_instance_state", None)
         return my_dict
 
